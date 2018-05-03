@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "all_scores": {
+      ".indexOn": ["score", "user_id"],
+      ".read": "true",
+      ".write": "true"
+    }
+  }
+}

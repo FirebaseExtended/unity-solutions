@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "all_scores": {
+      ".indexOn": ["score", "user_id"],
+      ".read": "true",
+      ".write": "newData.child('user_id') == auth.uid"
+    }
+  }
+}
