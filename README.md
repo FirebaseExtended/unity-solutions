@@ -7,6 +7,9 @@ using Firebase tools to add great functions like cross-platform leaderboards!
 See the subdirectories for more information on how to incorporate a specific
 solution.
 
+## Solutions
+- [Cross Platform Leaderboard using Firebase Database](https://github.com/firebase/unity-solutions/tree/master/Assets/Firebase_Leaderboard)
+
 This is not an officially supported Google product.
 
 _Unity&reg; is a trademark of Unity Technologies._
