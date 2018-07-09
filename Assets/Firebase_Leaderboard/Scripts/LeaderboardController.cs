@@ -349,11 +349,25 @@ namespace Firebase.Leaderboard {
     /// <param name="timestamp">
     ///   The timestamp the score was achieved, in Epoch seconds. If <= 0, current time is used.
     /// </param>
+    [Obsolete("User AddScore(userId, username, score, timestamp) instead.")]
     public void AddScore(string userId, int score, long timestamp = -1L) {
+      AddScore(userId, userId, score, timestamp);
+    }
+
+    /// <summary>
+    /// Add a new score for the user at the given timestamp (default Now).
+    /// </summary>
+    /// <param name="userId">User ID for whom to add the new score.</param>
+    /// <param name="username">Username to display for the score.</param>
+    /// <param name="score">The score value.</param>
+    /// <param name="timestamp">
+    ///   The timestamp the score was achieved, in Epoch seconds. If <= 0, current time is used.
+    /// </param>
+    public void AddScore(string userId, string username, int score, long timestamp = -1L) {
       if (timestamp <= 0) {
         timestamp = DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond;
       }
-      var scoreOb = new UserScore(userId, score, timestamp);
+      var scoreOb = new UserScore(userId, username, score, timestamp);
       var scoreDict = scoreOb.ToDictionary();
 
       addingUserScore = true;
