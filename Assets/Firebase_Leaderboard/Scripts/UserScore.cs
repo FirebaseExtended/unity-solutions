@@ -28,10 +28,12 @@ namespace Firebase.Leaderboard {
   [Serializable]
   public class UserScore {
     public static string UserIDPath = "user_id";
+    public static string UsernamePath = "username";
     public static string ScorePath = "score";
     public static string TimestampPath = "timestamp";
 
     public string UserID;
+    public string Username;
     public long Score;
     public long Timestamp;
 
@@ -54,8 +56,24 @@ namespace Firebase.Leaderboard {
     /// <param name="userId">The user's unique ID.</param>
     /// <param name="score">The score value.</param>
     /// <param name="timestamp">The timestamp the score was achieved.</param>
+    [Obsolete("User UserScore(userId, username, score, timestamp) instead.")]
     public UserScore(string userId, int score, long timestamp) {
       UserID = userId;
+      Username = userId;
+      Score = score;
+      Timestamp = timestamp;
+    }
+
+    /// <summary>
+    /// Construct a UserScore manually from a User ID, score value, and timestamp.
+    /// </summary>
+    /// <param name="userId">The user's unique ID.</param>
+    /// <param name="username">The user's display name.</param>
+    /// <param name="score">The score value.</param>
+    /// <param name="timestamp">The timestamp the score was achieved.</param>
+    public UserScore(string userId, string username, int score, long timestamp) {
+      UserID = userId;
+      Username = username;
       Score = score;
       Timestamp = timestamp;
     }
@@ -66,6 +84,9 @@ namespace Firebase.Leaderboard {
     /// <param name="record">The score record object from Firebase Database.</param>
     public UserScore(DataSnapshot record) {
       UserID = record.Child(UserIDPath).Value.ToString();
+      if (record.Child(UsernamePath).Exists) {
+        Username = record.Child(UsernamePath).Value.ToString();
+      }
       long score;
       if (Int64.TryParse(record.Child(ScorePath).Value.ToString(), out score)) {
         Score = score;
@@ -86,6 +107,7 @@ namespace Firebase.Leaderboard {
     public Dictionary<string, object> ToDictionary() {
       return new Dictionary<string, object>() {
         {UserIDPath, UserID},
+        {UsernamePath, Username},
         {ScorePath, Score},
         {TimestampPath, Timestamp}
       };

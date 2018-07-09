@@ -42,6 +42,11 @@ namespace Firebase.Leaderboard.Demo {
     public InputField UserIDInput;
 
     /// <summary>
+    /// Input field for the User display name, when creating a score manually.
+    /// </summary>
+    public InputField UsernameInput;
+
+    /// <summary>
     /// Input field for score value, when creating a score manually.
     /// </summary>
     public InputField ScoreInput;
@@ -120,7 +125,7 @@ namespace Firebase.Leaderboard.Demo {
     /// Helpful index when referring to the Text components in a top score prefab.
     /// </summary>
     private enum TopScoreElement {
-      UserID = 1,
+      Username = 1,
       Timestamp = 2,
       Score = 3
     }
@@ -192,7 +197,8 @@ namespace Firebase.Leaderboard.Demo {
         var scoreObject = scoreObjects[i];
         scoreObject.SetActive(true);
         var textElements = scoreObject.GetComponentsInChildren<Text>();
-        textElements[(int)TopScoreElement.UserID].text = score.UserID;
+        textElements[(int)TopScoreElement.Username].text =
+            String.IsNullOrEmpty(score.Username) ? score.UserID : score.Username;
         textElements[(int)TopScoreElement.Timestamp].text = score.ShortDateString;
         textElements[(int)TopScoreElement.Score].text = score.Score.ToString();
       }
@@ -303,7 +309,7 @@ namespace Firebase.Leaderboard.Demo {
     /// </summary>
     public void AddScore() {
       leaderboard.ScoreAdded += UpdateUserScoreDisplay;
-      AddScore(UserIDInput.text, int.Parse(ScoreInput.text));
+      AddScore(UserIDInput.text, UsernameInput.text, int.Parse(ScoreInput.text));
     }
 
     /// <summary>
@@ -312,8 +318,8 @@ namespace Firebase.Leaderboard.Demo {
     /// </summary>
     /// <param name="userId">User ID for whom to add a score.</param>
     /// <param name="score">Score to add.</param>
-    public void AddScore(string userId, int score) {
-      leaderboard.AddScore(userId, score);
+    public void AddScore(string userId, string username, int score) {
+      leaderboard.AddScore(userId, username, score);
     }
 
     /// <summary>
@@ -351,9 +357,9 @@ namespace Firebase.Leaderboard.Demo {
       for (var i = 0; i < num; i++) {
         userId = System.Guid.NewGuid().ToString().Substring(0, 6);
         score = random.Next(10000);
-        AddScore(userId, score);
+        AddScore(userId, userId, score);
         if (i % DisplayRandomScoreInterval == 0) {
-          UserIDInput.text = userId;
+          UserIDInput.text = UsernameInput.text = userId;
           ScoreInput.text = score.ToString();
           yield return null;
         }
