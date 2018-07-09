@@ -1,0 +1,101 @@
+.row {
+  flex-direction: row;
+}
+
+.row > * {
+  flex-grow: 2;
+}
+
+.justify {
+  justify-content: space-between;
+}
+
+.justify > * {
+  flex-grow: 0;
+}
+
+.dirty {
+  background-color: #FF8080;
+}
+
+Box.headers {
+  min-height: 30;
+}
+
+Box.headers.top-headers {
+  min-height: 60;
+}
+
+Box.headers Label {
+  font-size: 20;
+}
+
+ScrollView.value-container {
+  flex-grow: 1;
+}
+
+Toggle.sync-toggle > Label {
+  min-width: 0;
+}
+
+.flex-0 {
+  flex-grow: 0;
+}
+
+.flex-1 {
+  flex-grow: 1;
+}
+
+.column {
+  padding-left: 5;
+  padding-right: 5;
+  border-width: 0 1 0 0;
+  border-color: #888;
+}
+
+.reset-button {
+  width: 75;
+  flex-grow: 0;
+  margin-left: 5;
+}
+
+.unity-foldout__content {
+  margin-left: 0;
+}
+
+SyncStringTarget.group {
+  flex-direction: column;
+}
+
+Box.button-container {
+  float: bottom;
+  min-height: 30;
+}
+
+Box.button-container Button {
+  font-size: 15;
+}
+
+.unity-foldout__toggle {
+  margin-left: 0;
+}
+
+.indent-1 {
+  padding-left: 20;
+}
+
+.indent-2 {
+  padding-left: 40;
+}
+
+.indent-3 {
+  padding-left: 60;
+}
+
+.indent-4 {
+  padding-left: 80;
+}
+
+.indent-5 {
+  padding-left: 100;
+}

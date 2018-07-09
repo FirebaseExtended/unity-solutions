@@ -132,7 +132,7 @@ namespace Firebase.Leaderboard.Editor {
         if (GUILayout.Button(minusStr + "1 Month")) {
           return current.AddMonths(minusMod).Ticks / TimeSpan.TicksPerSecond;
         }
-      } catch (ArgumentOutOfRangeException ex) {
+      } catch (ArgumentOutOfRangeException) {
         // Caused when trying to go below DateTime(0). Return 0 instead.
         return 0L;
       }
