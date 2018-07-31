@@ -15,9 +15,18 @@ namespace Firebase.Leaderboard.Editor {
       base.OnInspectorGUI();
       var controller = target as LeaderboardController;
 
+      // String field for the score data path in Firebase Realtime Database.
+      var dataPath = EditorGUILayout.TextField("Score Data Path", controller.AllScoreDataPath);
+      if (dataPath != controller.AllScoreDataPath) {
+        controller.AllScoreDataPath = dataPath;
+      }
+
       // Int text field for how many scores to retrieve.
-      controller.ScoresToRetrieve = Mathf.Clamp(
+      var numScores = Mathf.Clamp(
           EditorGUILayout.IntField("Scores To Retrieve", controller.ScoresToRetrieve), 1, 100);
+      if (numScores != controller.ScoresToRetrieve) {
+        controller.ScoresToRetrieve = numScores;
+      }
 
       // Label explaining the time frame from which the controller will look for scores.
       GUILayout.BeginHorizontal();

@@ -2225,7 +2225,6 @@ MonoBehaviour:
   EditorP12FileName: 
   EditorServiceAccountEmail: 
   EditorP12Password: 
-  AllScoreDataPath: all_scores
   TopScores: []
   ScoresToRetrieveInternal: 20
   EndTimeInternal: 0

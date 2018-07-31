@@ -1,6 +1,6 @@
 {
   "rules": {
-    "all_scores": {
+    "$scorePath": {
       ".indexOn": ["score", "user_id"],
       ".read": "true",
       ".write": "true"
