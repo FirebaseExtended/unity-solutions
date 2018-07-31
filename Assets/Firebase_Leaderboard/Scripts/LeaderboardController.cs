@@ -54,11 +54,6 @@ namespace Firebase.Leaderboard {
     public string EditorP12Password;
 
     /// <summary>
-    /// Path to store all scores in Firebase Database.
-    /// </summary>
-    public string AllScoreDataPath = "all_scores";
-
-    /// <summary>
     /// Subscribe to be notified when the database has been initialized.
     /// </summary>
     public event EventHandler FirebaseInitialized;
@@ -84,6 +79,19 @@ namespace Firebase.Leaderboard {
     public List<UserScore> TopScores;
 
     /// <summary>
+    /// Path to store all scores in Firebase Database.
+    /// </summary>
+    private string AllScoreDataPathInternal = "all_scores";
+    public string AllScoreDataPath {
+      get {
+        return AllScoreDataPathInternal;
+      }
+      set {
+        UpdateRetrievalParams(value, ScoresToRetrieveInternal, EndTimeInternal, IntervalInternal);
+      }
+    }
+
+    /// <summary>
     /// The number of scores to retrieve/monitor from the database.
     /// </summary>
     [SerializeField]
@@ -94,7 +102,7 @@ namespace Firebase.Leaderboard {
         return ScoresToRetrieveInternal;
       }
       set {
-        UpdateRetrievalParams(value, EndTime, Interval);
+        UpdateRetrievalParams(AllScoreDataPathInternal, value, EndTime, Interval);
       }
     }
 
@@ -111,7 +119,7 @@ namespace Firebase.Leaderboard {
         return EndTimeInternal;
       }
       set {
-        UpdateRetrievalParams(ScoresToRetrieve, value, Interval);
+        UpdateRetrievalParams(AllScoreDataPathInternal, ScoresToRetrieve, value, Interval);
       }
     }
 
@@ -129,7 +137,7 @@ namespace Firebase.Leaderboard {
         return IntervalInternal;
       }
       set {
-        UpdateRetrievalParams(ScoresToRetrieve, EndTime, value);
+        UpdateRetrievalParams(AllScoreDataPathInternal, ScoresToRetrieve, EndTime, value);
       }
     }
 
@@ -204,6 +212,7 @@ namespace Firebase.Leaderboard {
     private void OnDisable() {
       if (currentNewScoreQuery != null) {
         currentNewScoreQuery.ChildAdded -= OnScoreAdded;
+        currentNewScoreQuery.ChildRemoved -= OnScoreRemoved;
       }
     }
 
@@ -240,6 +249,7 @@ namespace Firebase.Leaderboard {
       }
       if (refreshScores) {
         RefreshScores();
+        refreshScores = false;
         return;
       }
       if (sendScoreAddedEvent) {
@@ -408,23 +418,30 @@ namespace Firebase.Leaderboard {
     /// Bounds the fields to appropriate values, and triggers a call to refresh the top scores if
     /// any of the parameters have changed.
     /// </summary>
+    /// <param name="dataPath">Path to data to retrieve in Firebase Realtime Database.</param>
     /// <param name="numToRetrieve">New ScoresToRetrieve value.</param>
     /// <param name="endTime">New EndTime value.</param>
     /// <param name="interval">New Interval value.</param>
-    private void UpdateRetrievalParams(int numToRetrieve, long endTime, long interval) {
-        var newScoresToRetrieve = Math.Max(0, Math.Min(numToRetrieve, 100));
-        var newEndTime = endTime < 0L ? 0L : endTime;
-        var newInterval = interval < 0L ? 0L : interval;
-        if (newInterval > endTime && endTime != 0) {
-          newInterval = endTime;
-        }
+    private void UpdateRetrievalParams(
+        string dataPath,
+        int numToRetrieve,
+        long endTime,
+        long interval) {
+      var newScoresToRetrieve = Math.Max(0, Math.Min(numToRetrieve, 100));
+      var newEndTime = endTime < 0L ? 0L : endTime;
+      var newInterval = interval < 0L ? 0L : interval;
+      if (newInterval > endTime && endTime != 0) {
+        newInterval = endTime;
+      }
 
-        refreshScores = newScoresToRetrieve != ScoresToRetrieveInternal ||
-            newEndTime != EndTimeInternal ||
-            newInterval != IntervalInternal;
-        ScoresToRetrieveInternal = newScoresToRetrieve;
-        EndTimeInternal = newEndTime;
-        IntervalInternal = newInterval;
+      refreshScores = dataPath != AllScoreDataPathInternal ||
+          newScoresToRetrieve != ScoresToRetrieveInternal ||
+          newEndTime != EndTimeInternal ||
+          newInterval != IntervalInternal;
+      AllScoreDataPathInternal = dataPath;
+      ScoresToRetrieveInternal = newScoresToRetrieve;
+      EndTimeInternal = newEndTime;
+      IntervalInternal = newInterval;
     }
 
     /// <summary>
@@ -432,6 +449,10 @@ namespace Firebase.Leaderboard {
     /// leaderboard.
     /// </summary>
     private void OnScoreAdded(object sender, ChildChangedEventArgs args) {
+      if (args.Snapshot == null || !args.Snapshot.Exists) {
+        return;
+      }
+
       var score = new UserScore(args.Snapshot);
 
       // Verify that score is within start/end times, and isn't already in TopScores.
@@ -471,6 +492,9 @@ namespace Firebase.Leaderboard {
     /// Callback when a score record is removed from the database.
     /// </summary>
     private void OnScoreRemoved(object sender, ChildChangedEventArgs args) {
+      if (args.Snapshot == null || !args.Snapshot.Exists) {
+        return;
+      }
       var score = new UserScore(args.Snapshot);
       if (TopScores.Contains(score)) {
         TopScores.Remove(score);
@@ -496,7 +520,8 @@ namespace Firebase.Leaderboard {
           .GetValueAsync()
           .ContinueWith(task => {
             if (task.Exception != null) {
-              throw task.Exception;
+              SetTopScores(userScores);
+              return;
             } else if (!task.IsCompleted) {
               return;
             }

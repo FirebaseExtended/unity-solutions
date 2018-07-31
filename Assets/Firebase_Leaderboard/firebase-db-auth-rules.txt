@@ -1,9 +1,9 @@
 {
   "rules": {
-    "all_scores": {
+    "$scorePath": {
       ".indexOn": ["score", "user_id"],
       ".read": "true",
-      ".write": "newData.child('user_id') == auth.uid"
+      ".write": "newData.child('user_id').val() == auth.uid"
     }
   }
 }
