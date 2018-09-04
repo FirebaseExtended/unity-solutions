@@ -6,7 +6,7 @@ This solution makes it easy to incorporate a cross-platform leaderboard into you
 projects. You can follow the steps here to add a LeaderboardController to your own project, or take
 a look at the [Demo Scene][demo-scene] to see one in action right away!
 
-[demo-scene]: /Assets/Firebase_Leaderboard/Demo/DemoScene.unity
+[demo-scene]: /Firebase_Leaderboard/Demo/DemoScene.unity
 
 # Contents
 
@@ -49,14 +49,14 @@ If you choose to use rules that disallow public access, you will need to [config
 [firebase-setup]: https://firebase.google.com/docs/database/unity/start?authuser=0#setup
 [public-access]: https://firebase.google.com/docs/database/unity/start?authuser=0#setting_up_public_access
 [restricted-access]: https://firebase.google.com/docs/database/unity/start?authuser=0#optional_editor_setup_for_restricted_access
-[firebase-db-rules]: /Assets/Firebase_Leaderboard/firebase-db-rules.txt
+[firebase-db-rules]: /Firebase_Leaderboard/firebase-db-rules.txt
 
 # Usage
 
 ## Setting up the LeaderboardController
 
 * If you haven't already, copy all the `.cs` source files from
-  [Firebase_Leaderboard/Scripts][scripts-folder] to your project.
+  [Scripts][scripts-folder] to your project.
 * Add the `LeaderboardController` MonoBehaviour to a GameObject in
   your scene.
   * It is advisable to disable the GameObject with the LeaderboardController component attached
@@ -76,7 +76,7 @@ If you choose to use rules that disallow public access, you will need to [config
     * Note that if you do, you will also need to update the path in the rules text if you set up
       editor restricted access.
 
-[scripts-folder]: /Assets/Firebase_Leaderboard/Scripts
+[scripts-folder]: /Firebase_Leaderboard/Scripts
 [cloud-iam]: https://console.cloud.google.com/iam-admin/iam
 
 ## Using LeaderboardController EventHandlers
@@ -142,7 +142,7 @@ entries whose `user_id` attribute matches the `auth.uid`. Remember that you must
 Firebase Auth UID to the `AddScore` as the user's ID, or the writes will fail!
 
 [auth-var]: https://firebase.google.com/docs/database/security/user-security#section-variable
-[firebase-db-auth-rules]: /Assets/Firebase_Leaderboard/firebase-db-auth-rules.txt
+[firebase-db-auth-rules]: /Firebase_Leaderboard/firebase-db-auth-rules.txt
 
 ## Data Validation
 
