@@ -2226,9 +2226,11 @@ MonoBehaviour:
   EditorServiceAccountEmail: 
   EditorP12Password: 
   TopScores: []
+  AllScoreDataPathInternal: all_scores
   ScoresToRetrieveInternal: 20
   EndTimeInternal: 0
   IntervalInternal: 0
+  LowestFirstInternal: 0
 --- !u!1 &766850846
 GameObject:
   m_ObjectHideFlags: 0
