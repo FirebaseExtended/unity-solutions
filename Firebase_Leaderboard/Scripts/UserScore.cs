@@ -57,7 +57,7 @@ namespace Firebase.Leaderboard {
     /// <param name="score">The score value.</param>
     /// <param name="timestamp">The timestamp the score was achieved.</param>
     [Obsolete("User UserScore(userId, username, score, timestamp) instead.")]
-    public UserScore(string userId, int score, long timestamp) {
+    public UserScore(string userId, long score, long timestamp) {
       UserID = userId;
       Username = userId;
       Score = score;
@@ -71,7 +71,7 @@ namespace Firebase.Leaderboard {
     /// <param name="username">The user's display name.</param>
     /// <param name="score">The score value.</param>
     /// <param name="timestamp">The timestamp the score was achieved.</param>
-    public UserScore(string userId, string username, int score, long timestamp) {
+    public UserScore(string userId, string username, long score, long timestamp) {
       UserID = userId;
       Username = username;
       Score = score;

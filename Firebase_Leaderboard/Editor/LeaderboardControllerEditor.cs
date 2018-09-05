@@ -28,6 +28,11 @@ namespace Firebase.Leaderboard.Editor {
         controller.ScoresToRetrieve = numScores;
       }
 
+      var lowestFirst = EditorGUILayout.Toggle("Low Scores Better", controller.LowestFirst);
+      if (lowestFirst != controller.LowestFirst) {
+        controller.LowestFirst = lowestFirst;
+      }
+
       // Label explaining the time frame from which the controller will look for scores.
       GUILayout.BeginHorizontal();
       GUILayout.Label("Get scores from: ");
