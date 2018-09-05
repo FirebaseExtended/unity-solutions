@@ -81,13 +81,15 @@ namespace Firebase.Leaderboard {
     /// <summary>
     /// Path to store all scores in Firebase Database.
     /// </summary>
+    [SerializeField]
+    [HideInInspector]
     private string AllScoreDataPathInternal = "all_scores";
     public string AllScoreDataPath {
       get {
         return AllScoreDataPathInternal;
       }
       set {
-        UpdateRetrievalParams(value, ScoresToRetrieveInternal, EndTimeInternal, IntervalInternal);
+        UpdateRetrievalParams(value, ScoresToRetrieve, EndTime, Interval, LowestFirst);
       }
     }
 
@@ -102,7 +104,7 @@ namespace Firebase.Leaderboard {
         return ScoresToRetrieveInternal;
       }
       set {
-        UpdateRetrievalParams(AllScoreDataPathInternal, value, EndTime, Interval);
+        UpdateRetrievalParams(AllScoreDataPath, value, EndTime, Interval, LowestFirst);
       }
     }
 
@@ -119,7 +121,7 @@ namespace Firebase.Leaderboard {
         return EndTimeInternal;
       }
       set {
-        UpdateRetrievalParams(AllScoreDataPathInternal, ScoresToRetrieve, value, Interval);
+        UpdateRetrievalParams(AllScoreDataPath, ScoresToRetrieve, value, Interval, LowestFirst);
       }
     }
 
@@ -137,7 +139,22 @@ namespace Firebase.Leaderboard {
         return IntervalInternal;
       }
       set {
-        UpdateRetrievalParams(AllScoreDataPathInternal, ScoresToRetrieve, EndTime, value);
+        UpdateRetrievalParams(AllScoreDataPath, ScoresToRetrieve, EndTime, value, LowestFirst);
+      }
+    }
+
+    /// <summary>
+    /// Indiciates that low scores are better, i.e. fastest time,fewest wounds, etc.
+    /// </summary>
+    [SerializeField]
+    [HideInInspector]
+    private bool LowestFirstInternal = false;
+    public bool LowestFirst {
+      get {
+        return LowestFirstInternal;
+      }
+      set {
+        UpdateRetrievalParams(AllScoreDataPath, ScoresToRetrieve, EndTime, Interval, value);
       }
     }
 
@@ -285,9 +302,7 @@ namespace Firebase.Leaderboard {
     /// </summary>
     public void RefreshScores() {
       if (initialized) {
-        userScores.Clear();
-        TopScores.Clear();
-        GetInitialTopScores(Int64.MaxValue);
+        GetInitialTopScores(LowestFirst ? Int64.MinValue : Int64.MaxValue);
       }
     }
 
@@ -340,9 +355,9 @@ namespace Firebase.Leaderboard {
                       endTS)
                 };
               } else {
-                var orderedScores =scores.OrderBy(score => score.Score);
+                var orderedScores = scores.OrderBy(score => score.Score);
                 userScoreArgs = new UserScoreArgs {
-                  Score = orderedScores.Last()
+                  Score = LowestFirst ? orderedScores.First() : orderedScores.Last()
                 };
               }
             }
@@ -359,9 +374,10 @@ namespace Firebase.Leaderboard {
     /// <param name="timestamp">
     ///   The timestamp the score was achieved, in Epoch seconds. If <= 0, current time is used.
     /// </param>
+    /// <returns>Task running to add the score.</returns>
     [Obsolete("User AddScore(userId, username, score, timestamp) instead.")]
-    public void AddScore(string userId, int score, long timestamp = -1L) {
-      AddScore(userId, userId, score, timestamp);
+    public Task AddScore(string userId, long score, long timestamp = -1L) {
+      return AddScore(userId, userId, score, timestamp);
     }
 
     /// <summary>
@@ -373,29 +389,41 @@ namespace Firebase.Leaderboard {
     /// <param name="timestamp">
     ///   The timestamp the score was achieved, in Epoch seconds. If <= 0, current time is used.
     /// </param>
-    public void AddScore(string userId, string username, int score, long timestamp = -1L) {
+    /// <returns>Task running to add the score.</returns>
+    public Task AddScore(string userId, string username, long score, long timestamp = -1L) {
       if (timestamp <= 0) {
         timestamp = DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond;
       }
       var scoreOb = new UserScore(userId, username, score, timestamp);
-      var scoreDict = scoreOb.ToDictionary();
+      return AddScore(scoreOb);
+    }
+
+    /// <summary>
+    /// Add a new pre-built UserScore to the DB.
+    /// </summary>
+    /// <param name="score">Score to add.</param>
+    /// <returns>Task running to add the score.</returns>
+    public Task<UserScore> AddScore(UserScore score) {
+      var scoreDict = score.ToDictionary();
 
       addingUserScore = true;
 
       var newEntry = dbref.Child(AllScoreDataPath).Push();
-      newEntry.SetValueAsync(scoreDict).ContinueWith(task => {
+      return newEntry.SetValueAsync(scoreDict).ContinueWith<UserScore>(task => {
         if (task.Exception != null) {
           Debug.LogWarning("Exception adding score: " + task.Exception);
         }
         if (!task.IsCompleted) {
-          return;
+          return null;
         }
         userScoreArgs = new UserScoreArgs {
-          Score = scoreOb
+          Score = score
         };
         sendScoreAddedEvent = true;
         addingUserScore = false;
+        return score;
       });
+
     }
 
     /// <summary>
@@ -422,11 +450,13 @@ namespace Firebase.Leaderboard {
     /// <param name="numToRetrieve">New ScoresToRetrieve value.</param>
     /// <param name="endTime">New EndTime value.</param>
     /// <param name="interval">New Interval value.</param>
+    /// <param name="lowestFirst">New LowestFirst value.</param>
     private void UpdateRetrievalParams(
         string dataPath,
         int numToRetrieve,
         long endTime,
-        long interval) {
+        long interval,
+        bool lowestFirst) {
       var newScoresToRetrieve = Math.Max(0, Math.Min(numToRetrieve, 100));
       var newEndTime = endTime < 0L ? 0L : endTime;
       var newInterval = interval < 0L ? 0L : interval;
@@ -434,14 +464,24 @@ namespace Firebase.Leaderboard {
         newInterval = endTime;
       }
 
-      refreshScores = dataPath != AllScoreDataPathInternal ||
-          newScoresToRetrieve != ScoresToRetrieveInternal ||
-          newEndTime != EndTimeInternal ||
-          newInterval != IntervalInternal;
+      if (Application.isPlaying) {
+        refreshScores = refreshScores ||
+            dataPath != AllScoreDataPathInternal ||
+            newScoresToRetrieve != ScoresToRetrieveInternal ||
+            newEndTime != EndTimeInternal ||
+            newInterval != IntervalInternal ||
+            lowestFirst != LowestFirst;
+        // If any factors have changed, immediately clear TopScores so they don't get used.
+        if (refreshScores) {
+          userScores.Clear();
+          TopScores.Clear();
+        }
+      }
       AllScoreDataPathInternal = dataPath;
       ScoresToRetrieveInternal = newScoresToRetrieve;
       EndTimeInternal = newEndTime;
       IntervalInternal = newInterval;
+      LowestFirstInternal = lowestFirst;
     }
 
     /// <summary>
@@ -470,11 +510,12 @@ namespace Firebase.Leaderboard {
         }
       }
 
-      // Don't add if the same user already has a higher score.
-      // If the same user has a lower score, remove it.
+      // Don't add if the same user already has a better score.
+      // If the same user has a worse score, remove it.
       var existingScore = TopScores.Find(s => s.UserID == score.UserID);
       if (existingScore != null) {
-        if (existingScore.Score > score.Score) {
+        var bestScore = GetBestScore(existingScore, score);
+        if (existingScore == bestScore) {
           return;
         }
         TopScores.Remove(existingScore);
@@ -484,8 +525,34 @@ namespace Firebase.Leaderboard {
       }
 
       TopScores.Add(score);
-      TopScores = TopScores.OrderByDescending(s => s.Score).Take(ScoresToRetrieve).ToList();
+      if (LowestFirst) {
+        TopScores = TopScores.OrderBy(s => s.Score).Take(ScoresToRetrieve).ToList();
+      } else {
+        TopScores = TopScores.OrderByDescending(s => s.Score).Take(ScoresToRetrieve).ToList();
+      }
       sendUpdateTopScoresEvent = true;
+    }
+
+    /// <summary>
+    /// Gets the best of the provided scores.
+    /// </summary>
+    /// <param name="scores"></param>
+    /// <returns>Best of scores, depending on whether lower or higher scores are better.</returns>
+    private UserScore GetBestScore(params UserScore[] scores) {
+      if (scores.Length == 0) {
+        return null;
+      }
+      UserScore bestScore = null;
+      foreach (var score in scores) {
+        if (bestScore == null) {
+          bestScore = score;
+        } else if (LowestFirst && score.Score < bestScore.Score) {
+          bestScore = score;
+        } else if (!LowestFirst && score.Score > bestScore.Score) {
+          bestScore = score;
+        }
+      }
+      return bestScore;
     }
 
     /// <summary>
@@ -513,45 +580,55 @@ namespace Firebase.Leaderboard {
       gettingTopScores = true;
       var startTS = StartDate.Ticks / TimeSpan.TicksPerSecond;
       var endTS = EndDate.Ticks / TimeSpan.TicksPerSecond;
-      dbref.Child(AllScoreDataPath)
-          .OrderByChild("score")
-          .EndAt(batchEnd)
-          .LimitToLast(ScoresToRetrieve)
-          .GetValueAsync()
-          .ContinueWith(task => {
-            if (task.Exception != null) {
-              SetTopScores(userScores);
-              return;
-            } else if (!task.IsCompleted) {
-              return;
-            }
+      var query = dbref.Child(AllScoreDataPath).OrderByChild("score");
+      if (LowestFirst) {
+        query = query.StartAt(batchEnd).LimitToFirst(ScoresToRetrieve);
+      } else {
+        query = query.EndAt(batchEnd).LimitToLast(ScoresToRetrieve);
+      }
+      query.GetValueAsync().ContinueWith(task => {
+        if (task.Exception != null) {
+          SetTopScores();
+          return;
+        } else if (!task.IsCompleted) {
+          return;
+        }
 
-            if (task.Result.ChildrenCount == 0) {
-              // No scores left to retrieve.
-              SetTopScores(userScores);
-              return;
-            }
-            var scores = ParseValidUserScoreRecords(task.Result, startTS, endTS);
-            foreach (var userScore in scores) {
-              if (!userScores.ContainsKey(userScore.UserID)) {
-                userScores[userScore.UserID] = userScore;
-              }
-              if (userScores.Count == ScoresToRetrieve) {
-                SetTopScores(userScores);
-                return;
-              }
-            }
+        if (task.Result.ChildrenCount == 0) {
+          // No scores left to retrieve.
+          SetTopScores();
+          return;
+        }
+        var scores = ParseValidUserScoreRecords(task.Result, startTS, endTS);
+        foreach (var userScore in scores) {
+          if (!userScores.ContainsKey(userScore.UserID)) {
+            userScores[userScore.UserID] = userScore;
+          } else {
+            var bestScore = GetBestScore(userScores[userScore.UserID], userScore);
+            userScores[userScore.UserID] = bestScore;
+          }
+          if (userScores.Count == ScoresToRetrieve) {
+            SetTopScores();
+            return;
+          }
+        }
 
-            // Until we have found ScoresToRetrieve unique user scores or run out of
-            // scores to retrieve, get another page of score records by ending the next batch
-            // (ordered by score) at the lowest score found so far.
-            var lastScore = task.Result.Children.First().Child("score").GetRawJsonValue();
-            long score;
-            var nextEndAt = Int64.TryParse(lastScore, out score) ?
-                score - 1 :
-                Math.Max(0, batchEnd - 1);
-            GetInitialTopScores(nextEndAt);
-          });
+        // Until we have found ScoresToRetrieve unique user scores or run out of
+        // scores to retrieve, get another page of score records by ending the next batch
+        // (ordered by score) at the lowest score found so far.
+        var lastScore = task.Result.Children.First().Child("score").GetRawJsonValue();
+        long score, nextEndAt;
+        if (LowestFirst) {
+          nextEndAt = Int64.TryParse(lastScore, out score) ?
+              score + 1 :
+              Math.Min(Int64.MaxValue, batchEnd + 1);
+        } else {
+          nextEndAt = Int64.TryParse(lastScore, out score) ?
+              score - 1 :
+              Math.Max(Int64.MinValue, batchEnd - 1);
+        }
+        GetInitialTopScores(nextEndAt);
+      });
     }
 
     /// <summary>
@@ -578,18 +655,26 @@ namespace Firebase.Leaderboard {
     /// and queues an invocation of TopScoresUpdated on the next Update call.
     /// </summary>
     /// <param name="userScores">The valid top scores found, mapped to their user IDs.</param>
-    private void SetTopScores(Dictionary<string, UserScore> userScores) {
+    private void SetTopScores() {
       TopScores.Clear();
       // Reset top scores and unsubscribe from OnScoreAdded if already listening.
       if (currentNewScoreQuery != null) {
         currentNewScoreQuery.ChildAdded -= OnScoreAdded;
         currentNewScoreQuery.ChildRemoved -= OnScoreRemoved;
       }
-      TopScores.AddRange(userScores.Values.OrderByDescending(score => score.Score));
+      if (LowestFirst) {
+        TopScores.AddRange(userScores.Values.OrderBy(score => score.Score));
+      } else {
+        TopScores.AddRange(userScores.Values.OrderByDescending(score => score.Score));
+      }
       // Subscribe to any score added that is greater than the lowest current top score.
       currentNewScoreQuery = dbref.Child(AllScoreDataPath).OrderByChild("score");
       if (TopScores.Count > 0) {
-        currentNewScoreQuery = currentNewScoreQuery.StartAt(TopScores.Last().Score);
+        if (LowestFirst) {
+          currentNewScoreQuery = currentNewScoreQuery.EndAt(TopScores.Last().Score);
+        } else {
+          currentNewScoreQuery = currentNewScoreQuery.StartAt(TopScores.Last().Score);
+        }
       }
       // If the end date is now, subscribe to future score added events.
       if (EndTime <= 0) {
