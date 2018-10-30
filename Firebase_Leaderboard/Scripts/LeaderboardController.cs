@@ -389,12 +389,18 @@ namespace Firebase.Leaderboard {
     /// <param name="timestamp">
     ///   The timestamp the score was achieved, in Epoch seconds. If <= 0, current time is used.
     /// </param>
+    /// <param name="otherData">Miscellaneous data to store with the score object.</param>
     /// <returns>Task running to add the score.</returns>
-    public Task AddScore(string userId, string username, long score, long timestamp = -1L) {
+    public Task AddScore(
+        string userId,
+        string username,
+        long score,
+        long timestamp = -1L,
+        Dictionary<string, object> otherData=null) {
       if (timestamp <= 0) {
         timestamp = DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond;
       }
-      var scoreOb = new UserScore(userId, username, score, timestamp);
+      var scoreOb = new UserScore(userId, username, score, timestamp, otherData);
       return AddScore(scoreOb);
     }
 
