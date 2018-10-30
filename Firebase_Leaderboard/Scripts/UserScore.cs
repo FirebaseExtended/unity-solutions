@@ -31,11 +31,13 @@ namespace Firebase.Leaderboard {
     public static string UsernamePath = "username";
     public static string ScorePath = "score";
     public static string TimestampPath = "timestamp";
+    public static string OtherDataPath = "data";
 
     public string UserID;
     public string Username;
     public long Score;
     public long Timestamp;
+    public Dictionary<string, object> OtherData;
 
     /// <summary>
     /// Timestamp is stored as a long value, seconds since Epoch time. This property
@@ -71,11 +73,18 @@ namespace Firebase.Leaderboard {
     /// <param name="username">The user's display name.</param>
     /// <param name="score">The score value.</param>
     /// <param name="timestamp">The timestamp the score was achieved.</param>
-    public UserScore(string userId, string username, long score, long timestamp) {
+    /// <param name="otherData">Miscellaneous data to store with the score object.</param>
+    public UserScore(
+        string userId,
+        string username,
+        long score,
+        long timestamp,
+        Dictionary<string, object> otherData=null) {
       UserID = userId;
       Username = username;
       Score = score;
       Timestamp = timestamp;
+      OtherData = otherData;
     }
 
     /// <summary>
@@ -97,6 +106,12 @@ namespace Firebase.Leaderboard {
       if (Int64.TryParse(record.Child(TimestampPath).Value.ToString(), out timestamp)) {
         Timestamp = timestamp;
       }
+      if (record.Child(OtherDataPath).Exists && record.Child(OtherDataPath).HasChildren) {
+        OtherData = new Dictionary<string, object>();
+        foreach (var datum in record.Child(OtherDataPath).Children) {
+          OtherData[datum.Key] = datum.Value;
+        }
+      }
     }
 
     /// <summary>
@@ -109,7 +124,8 @@ namespace Firebase.Leaderboard {
         {UserIDPath, UserID},
         {UsernamePath, Username},
         {ScorePath, Score},
-        {TimestampPath, Timestamp}
+        {TimestampPath, Timestamp},
+        {OtherDataPath, OtherData}
       };
     }
 
