@@ -14,7 +14,6 @@
   limitations under the License.
 **/
 
-using Firebase;
 using Firebase.Database;
 using Firebase.Unity.Editor;
 using System;
@@ -224,13 +223,20 @@ namespace Firebase.Leaderboard {
     }
 
     /// <summary>
-    /// Make sure to de-queue event listeners when a component is disabled.
+    /// De-queue event listeners when a component is disabled.
     /// </summary>
     private void OnDisable() {
       if (currentNewScoreQuery != null) {
         currentNewScoreQuery.ChildAdded -= OnScoreAdded;
         currentNewScoreQuery.ChildRemoved -= OnScoreRemoved;
       }
+    }
+
+    /// <summary>
+    /// Re-queue event listeners when component is re-enabled.
+    /// </summary>
+    private void OnEnable() {
+      RefreshScores();
     }
 
     /// <summary>
@@ -414,22 +420,25 @@ namespace Firebase.Leaderboard {
 
       addingUserScore = true;
 
-      var newEntry = dbref.Child(AllScoreDataPath).Push();
-      return newEntry.SetValueAsync(scoreDict).ContinueWith<UserScore>(task => {
-        if (task.Exception != null) {
-          Debug.LogWarning("Exception adding score: " + task.Exception);
-        }
-        if (!task.IsCompleted) {
-          return null;
-        }
-        userScoreArgs = new UserScoreArgs {
-          Score = score
-        };
-        sendScoreAddedEvent = true;
-        addingUserScore = false;
-        return score;
+      return Task.Run(() => {
+        // Waits to ensure the FirebaseLeaderboard is initialized before adding the new score.
+        while (!initialized) { }
+        var newEntry = dbref.Child(AllScoreDataPath).Push();
+        return newEntry.SetValueAsync(scoreDict).ContinueWith(task => {
+          if (task.Exception != null) {
+            Debug.LogWarning("Exception adding score: " + task.Exception);
+          }
+          if (!task.IsCompleted) {
+            return null;
+          }
+          userScoreArgs = new UserScoreArgs {
+            Score = score
+          };
+          sendScoreAddedEvent = true;
+          addingUserScore = false;
+          return score;
+        }).Result;
       });
-
     }
 
     /// <summary>
