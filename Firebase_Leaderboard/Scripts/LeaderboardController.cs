@@ -262,7 +262,7 @@ namespace Firebase.Leaderboard {
 
           dbref = FirebaseDatabase.DefaultInstance.RootReference;
           initialized = true;
-          RefreshScores();
+          refreshScores = true;
           readyToInitialize = false;
           if (FirebaseInitialized != null) {
             FirebaseInitialized(this, null);
@@ -427,6 +427,7 @@ namespace Firebase.Leaderboard {
         return newEntry.SetValueAsync(scoreDict).ContinueWith(task => {
           if (task.Exception != null) {
             Debug.LogWarning("Exception adding score: " + task.Exception);
+            return null;
           }
           if (!task.IsCompleted) {
             return null;
@@ -508,7 +509,10 @@ namespace Firebase.Leaderboard {
         return;
       }
 
-      var score = new UserScore(args.Snapshot);
+      var score = UserScore.CreateScoreFromRecord(args.Snapshot);
+      if (score == null) {
+        return;
+      }
 
       // Verify that score is within start/end times, and isn't already in TopScores.
       if (TopScores.Contains(score)) {
@@ -577,7 +581,10 @@ namespace Firebase.Leaderboard {
       if (args.Snapshot == null || !args.Snapshot.Exists) {
         return;
       }
-      var score = new UserScore(args.Snapshot);
+      var score = UserScore.CreateScoreFromRecord(args.Snapshot);
+      if (score == null) {
+        return;
+      }
       if (TopScores.Contains(score)) {
         TopScores.Remove(score);
         RefreshScores();
@@ -609,7 +616,7 @@ namespace Firebase.Leaderboard {
           return;
         }
 
-        if (task.Result.ChildrenCount == 0) {
+        if (!task.Result.HasChildren) {
           // No scores left to retrieve.
           SetTopScores();
           return;
@@ -630,19 +637,20 @@ namespace Firebase.Leaderboard {
 
         // Until we have found ScoresToRetrieve unique user scores or run out of
         // scores to retrieve, get another page of score records by ending the next batch
-        // (ordered by score) at the lowest score found so far.
-        var lastScore = task.Result.Children.First().Child("score").GetRawJsonValue();
-        long score, nextEndAt;
+        // (ordered by score) at the worst score found so far.
+        long nextEndAt;
         if (LowestFirst) {
-          nextEndAt = Int64.TryParse(lastScore, out score) ?
-              score + 1 :
-              Math.Min(Int64.MaxValue, batchEnd + 1);
+          nextEndAt = scores.First().Score + 1L;
         } else {
-          nextEndAt = Int64.TryParse(lastScore, out score) ?
-              score - 1 :
-              Math.Max(Int64.MinValue, batchEnd - 1);
+          nextEndAt = scores.Last().Score - 1L;
         }
-        GetInitialTopScores(nextEndAt);
+        try {
+          GetInitialTopScores(nextEndAt);
+        } catch (Exception ex) {
+          Debug.LogException("Exception recursing GetInitialTopScores: " + ex);
+        } finally {
+          SetTopScores();
+        }
       });
     }
 
@@ -653,15 +661,16 @@ namespace Firebase.Leaderboard {
     /// <param name="snapshot">DataSnapshot record of user scores.</param>
     /// <param name="startTS">Earliest valid timestamp of a user score to retrieve.</param>
     /// <param name="endTS">Latest valid timestamp of a user score to retrieve.</param>
-    /// <returns>IEnumerable of valid UserScore objects.</returns>
-    private IEnumerable<UserScore> ParseValidUserScoreRecords(
+    /// <returns>List of valid UserScore objects.</returns>
+    private List<UserScore> ParseValidUserScoreRecords(
         DataSnapshot snapshot,
         long startTS,
         long endTS) {
       return snapshot.Children
-          .Select(scoreRecord => new UserScore(scoreRecord))
-          .Where(score => score.Timestamp > startTS && score.Timestamp <= endTS)
-          .Reverse();
+          .Select(scoreRecord => UserScore.CreateScoreFromRecord(scoreRecord))
+          .Where(score => score != null && score.Timestamp > startTS && score.Timestamp <= endTS)
+          .Reverse()
+          .ToList();
     }
 
     /// <summary>
