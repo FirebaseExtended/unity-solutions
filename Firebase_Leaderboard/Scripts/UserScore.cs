@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Firebase.Database;
+using UnityEngine;
 
 namespace Firebase.Leaderboard {
   /// <summary>
@@ -50,6 +51,24 @@ namespace Firebase.Leaderboard {
             new DateTime(Timestamp * TimeSpan.TicksPerSecond, DateTimeKind.Utc)).LocalDateTime;
         return scoreDate.ToShortDateString() + " " + scoreDate.ToShortTimeString();
       }
+    }
+
+    /// <summary>
+    /// If record contains required score fields, create a new UserScore from it.
+    /// If not, return null.
+    /// </summary>
+    /// <param name="record">The score record object from Firebase Database.</param>
+    public static UserScore CreateScoreFromRecord(DataSnapshot record) {
+      if (record == null) {
+        Debug.LogWarning("Null DataSnapshot record in UserScore.CreateScoreFromRecord.");
+        return null;
+      }
+      if (record.Child(UserIDPath).Exists && record.Child(ScorePath).Exists &&
+          record.Child(TimestampPath).Exists) {
+        return new UserScore(record);
+      }
+      Debug.LogWarning("Invalid record format in UserScore.CreateScoreFromRecord.");
+      return null;
     }
 
     /// <summary>
@@ -91,7 +110,7 @@ namespace Firebase.Leaderboard {
     /// Reconstruct a UserScore from a DataSnapshot record retrieved from Firebase Database.
     /// </summary>
     /// <param name="record">The score record object from Firebase Database.</param>
-    public UserScore(DataSnapshot record) {
+    private UserScore(DataSnapshot record) {
       UserID = record.Child(UserIDPath).Value.ToString();
       if (record.Child(UsernamePath).Exists) {
         Username = record.Child(UsernamePath).Value.ToString();
