@@ -647,7 +647,7 @@ namespace Firebase.Leaderboard {
         try {
           GetInitialTopScores(nextEndAt);
         } catch (Exception ex) {
-          Debug.LogException("Exception recursing GetInitialTopScores: " + ex);
+          Debug.LogException(ex);
         } finally {
           SetTopScores();
         }
