@@ -13,6 +13,7 @@ a look at the [Demo Scene][demo-scene] to see one in action right away!
 1. [Requirements](#requirements)
 1. [Setup](#setup)
    1. [Optional: Setup editor restricted access](#optional--setup-editor-restricted-access)
+1. [Overview of Scripts](#Overview of Scripts)
 1. [Usage](#usage)
    1. [Setting up the LeaderboardController](#setting-up-the-leaderboardcontroller)
    1. [Using LeaderboardController EventHandlers](#using-leaderboardcontroller-eventhandlers)
@@ -50,6 +51,96 @@ If you choose to use rules that disallow public access, you will need to [config
 [public-access]: https://firebase.google.com/docs/database/unity/start?authuser=0#setting_up_public_access
 [restricted-access]: https://firebase.google.com/docs/database/unity/start?authuser=0#optional_editor_setup_for_restricted_access
 [firebase-db-rules]: /Firebase_Leaderboard/firebase-db-rules.txt
+
+# Overview of Scripts
+To understand how you might customize these scripts for use in your project, start by exploring each script implemented in the Firebase_Leaderboard>Scripts directory, Firebase_Leaderboard>Demo and Mechahamster. Feel free to read through the code in Unity as you orient yourself to these scripts.
+<table>
+  <tr>
+   <td>Script Name
+   </td>
+   <td>Script Purpose
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>firebase-unity-solutions>Firebase_Leaderboard>Scripts>FirebaseInitializer
+   </td>
+   <td>This is a centralized script for initializing FireBase in your project.
+<p>
+You should not need to modify this script to customize for your game.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>firebase-unity-solutions>Firebase_Leaderboard>Scripts>LeaderboardController
+   </td>
+   <td>This script creates the Firebase.Leaderboard namespace, which is called by many of the other scripts. It contains the primary logic for the leaderboard and handles keeping the data from Firebase and Unity Game code synchronized by sending events to Firebase and triggering updates in the game when receiving new data.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>firebase-unity-solutions>Firebase_Leaderboard>Scripts>TopScoreArgs
+   </td>
+   <td>Defines the event arguments which are sent when LeaderboardController invokes TopScoresUpdated.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>firebase-unity-solutions>Firebase_Leaderboard>Scripts>UserScoreArgs
+   </td>
+   <td>Defines the event arguments which are sent when LeaderboardController invokes UserScoreUpdated.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>firebase-unity-solutions>Firebase_Leaderboard>Scripts>UserScore
+   </td>
+   <td>Represents a single user score record kept in FirebaseDatabase. By default a user score contains a timestamp, score value, and the User's unique ID. You may modify this class to add fields, but if you remove or change any of the three default fields, you will need to update the logic in LeaderboardController to match.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>firebase-unity-solutions>Firebase_Leaderboard>Editor>LeaderboardControllerEditor
+   </td>
+   <td>Creates the LeaderBoard interface, allowing the user to set certain variables and paths in the Unity Inspector window.
+<p>
+</td>
+</tr>
+<tr>
+<td>Assets>firebase-unity-solutions>Firebase_Leaderboard>Demo>DemoUIController
+</td>
+<td>In the Firebase_Leaderboard DemoScene, this script controls the Demo Interface.
+</td>
+</tr>
+If you update the LeaderBoardController script for your game, you will need to update this script with any new information.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>Hamster>Scripts>States>UploadTime
+   </td>
+   <td>In Mechahamster, this script creates a class called UploadTime, which manages the transfer of data to Firebase when the user selects the Submit! button at the end of a maze and logs their score.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>Hamster>Scripts>States>TopTimes
+   </td>
+   <td>In Mechahamster, this script creates a class called TopTime, which manages the top finish times for a level.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>Hamster>Scripts>Menus>TopTimesGUI
+   </td>
+   <td>In Mechahamster, this script creates an Interface class for providing code access to the GUI elements in the high score menu.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>Hamster>Scripts>States>LevelFinished
+   </td>
+   <td>In Mechahamster, this script creates a class called LevelFinished, which manages the logic driving the Level Finished menu page.
+   </td>
+  </tr>
+  <tr>
+   <td>Assets>Hamster>Scripts>Menus>LevelFinishedGUI
+   </td>
+   <td>In Mechahamster, this script creates an Interface class for providing code access to the GUI elements in the Level Finished menu.
+   </td>
+  </tr>
+</table>
+
 
 # Usage
 
