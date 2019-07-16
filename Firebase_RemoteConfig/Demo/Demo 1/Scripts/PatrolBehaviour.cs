@@ -3,11 +3,9 @@ using System.Collections;
 using System.Linq;
 using UnityEngine;
 
-namespace Firebase.ConfigAutoSync.Demo
-{
+namespace Firebase.ConfigAutoSync.Demo {
   [RequireComponent(typeof(Renderer))]
-  public class PatrolBehaviour : MonoBehaviour
-  {
+  public class PatrolBehaviour : MonoBehaviour {
     public Transform[] Points;
     public int StartPoint;
     public int NumPoints;
@@ -38,11 +36,17 @@ namespace Firebase.ConfigAutoSync.Demo
       }
 
       if (NumPoints > 0 && NumPoints < Points.Length) {
-        Points = Points.ToList().GetRange(0, NumPoints).ToArray();
+        if (StartPoint + NumPoints < Points.Length) {
+          Points = Points.ToList().GetRange(StartPoint, NumPoints).ToArray();
+        } else {
+          var points = Points.ToList().GetRange(StartPoint, Points.Length - StartPoint);
+          points.AddRange(Points.ToList().GetRange(0, NumPoints - points.Count));
+          Points = points.ToArray();
+        }
       }
 
-      transform.position = Points[StartPoint].position;
-      destinationInd = (StartPoint + 1) % Points.Length;
+      transform.position = Points[0].position;
+      destinationInd = (0 + 1) % Points.Length;
       destination = Points[destinationInd];
 
       transform.localScale *= (float)Size;
