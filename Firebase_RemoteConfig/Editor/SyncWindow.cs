@@ -14,7 +14,6 @@
   limitations under the License.
 **/
 
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,16 +21,14 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Firebase.ConfigAutoSync.Editor
-{
+namespace Firebase.ConfigAutoSync.Editor {
   /// <summary>
   /// This Editor Window displays all the discovered SyncTargets in a hierarchical view,
   /// and allows the user to control which ones are synced to Remote Config, with default
   /// and conditional values displayed as an easy-to-parse grid, including highlighting of
   /// changed values.
   /// </summary>
-  public class SyncWindow : EditorWindow
-  {
+  public class SyncWindow : EditorWindow {
     private const string stylePath =
         "Assets/firebase-unity-solutions/Firebase_RemoteConfig/Editor/Resources/sync_styles.uss";
     private const string headersClassName = "headers";
@@ -343,56 +340,54 @@ namespace Firebase.ConfigAutoSync.Editor
       valueScrollView.Add(topLevelElement);
 
       // Render unmapped targets, if any.
-      if (unmappedParams.Count > 0) {
-        var unmappedParamsSection = new TemplateContainer();
+      var unmappedParamsSection = new TemplateContainer();
 
-        // Create Unmapped Parameters header section.
-        var unmappedParamsHeader = new Box();
-        unmappedParamsHeader.AddToClassList(headersClassName);
-        var unmappedLabel = new Label("Unmapped Parameters");
-        unmappedParamsHeader.Add(unmappedLabel);
-        unmappedParamsSection.Add(unmappedParamsHeader);
-        foreach (var param in unmappedParams.OrderBy(p => p.Key)) {
-          var unmappedTarget = new UnmappedSyncElement(param);
-          unmappedParamsSection.Add(unmappedTarget);
-        }
-
-        // Add a section with TextField and Button to create a new unmapped Parameter.
-        var newKeyContainer = new TemplateContainer();
-        newKeyContainer.AddToClassList(columnClassName);
-        newKeyContainer.AddToClassList(rowClassName);
-        var newUnmappedParamText = "New Unmapped Param";
-        var newKeyField = new TextField {
-          value = newUnmappedParamText
-        };
-        newKeyContainer.Add(newKeyField);
-
-        var newUnmappedButton = new Button(() => {
-          if (string.IsNullOrWhiteSpace(newKeyField.value)) {
-            Debug.LogWarning("Cannot create parameter with null/whitespace key.");
-            return;
-          }
-          if (RemoteConfigData.parameters.ContainsKey(newKeyField.value)) {
-            Debug.LogWarning($"A parameter with key {newKeyField.value} already exists.");
-            return;
-          }
-          var newParam = RemoteConfigData.GetOrCreateParameter(newKeyField.value);
-          var newUnmappedTarget = new UnmappedSyncElement(newParam);
-          // Insert the new unmapped key at the end of the unmapped keys list.
-          var index = unmappedParamsSection.IndexOf(newKeyContainer);
-          unmappedParamsSection.Insert(index, newUnmappedTarget);
-          newKeyField.value = newUnmappedParamText;
-          // Apply column sizing to newly created SyncTargetElement.
-          newUnmappedTarget
-              .Query(null, columnClassName)
-              .ForEach(col => col.style.minWidth = col.style.maxWidth = columnSize);
-        });
-        newUnmappedButton.text = "+";
-        newUnmappedButton.AddToClassList("flex-0");
-        newKeyContainer.Add(newUnmappedButton);
-        unmappedParamsSection.Add(newKeyContainer);
-        topLevelElement.Add(unmappedParamsSection);
+      // Create Unmapped Parameters header section.
+      var unmappedParamsHeader = new Box();
+      unmappedParamsHeader.AddToClassList(headersClassName);
+      var unmappedLabel = new Label("Unmapped Parameters");
+      unmappedParamsHeader.Add(unmappedLabel);
+      unmappedParamsSection.Add(unmappedParamsHeader);
+      foreach (var param in unmappedParams.OrderBy(p => p.Key)) {
+        var unmappedTarget = new UnmappedSyncElement(param);
+        unmappedParamsSection.Add(unmappedTarget);
       }
+
+      // Add a section with TextField and Button to create a new unmapped Parameter.
+      var newKeyContainer = new TemplateContainer();
+      newKeyContainer.AddToClassList(columnClassName);
+      newKeyContainer.AddToClassList(rowClassName);
+      var newUnmappedParamText = "New Unmapped Param";
+      var newKeyField = new TextField {
+        value = newUnmappedParamText
+      };
+      newKeyContainer.Add(newKeyField);
+
+      var newUnmappedButton = new Button(() => {
+        if (string.IsNullOrWhiteSpace(newKeyField.value)) {
+          Debug.LogWarning("Cannot create parameter with null/whitespace key.");
+          return;
+        }
+        if (RemoteConfigData.parameters.ContainsKey(newKeyField.value)) {
+          Debug.LogWarning($"A parameter with key {newKeyField.value} already exists.");
+          return;
+        }
+        var newParam = RemoteConfigData.GetOrCreateParameter(newKeyField.value);
+        var newUnmappedTarget = new UnmappedSyncElement(newParam);
+        // Insert the new unmapped key at the end of the unmapped keys list.
+        var index = unmappedParamsSection.IndexOf(newKeyContainer);
+        unmappedParamsSection.Insert(index, newUnmappedTarget);
+        newKeyField.value = newUnmappedParamText;
+        // Apply column sizing to newly created SyncTargetElement.
+        newUnmappedTarget
+            .Query(null, columnClassName)
+            .ForEach(col => col.style.minWidth = col.style.maxWidth = columnSize);
+      });
+      newUnmappedButton.text = "+";
+      newUnmappedButton.AddToClassList("flex-0");
+      newKeyContainer.Add(newUnmappedButton);
+      unmappedParamsSection.Add(newKeyContainer);
+      topLevelElement.Add(unmappedParamsSection);
 
       // Create a SyncGroupElement for the top-level SyncTargetContainer. SyncGroupElement and
       // the various SyncTypeElement classes handle the logic for creating the hierarchy UI.

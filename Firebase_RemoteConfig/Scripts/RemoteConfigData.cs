@@ -18,8 +18,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace Firebase.ConfigAutoSync
-{
+namespace Firebase.ConfigAutoSync {
   /// <summary>
   /// Serializable version of RemoteConfig data in the format expected by the REST API, as:
   /// {
@@ -123,7 +122,7 @@ namespace Firebase.ConfigAutoSync
   [Serializable]
   public class RemoteConfigValue {
     /// <summary>
-    /// Value as a string. RemoteConfig parameters can also be ints, doubles, or bools, but
+    /// Value as a string. RemoteConfig parameters can also be ints, doubles, bools, or JSON, but
     /// string is a unifying type for serialization.
     /// </summary>
     public string value;
