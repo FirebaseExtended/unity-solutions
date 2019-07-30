@@ -15,6 +15,7 @@
 **/
 
 using Firebase.Database;
+using Firebase.Unity;
 using Firebase.Unity.Editor;
 using System;
 using System.Collections;

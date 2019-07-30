@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6935427653708382748
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6935427653708382751}
+  - component: {fileID: 6935427653708382749}
+  - component: {fileID: 6935427653708382750}
+  m_Layer: 0
+  m_Name: SyncFieldsPrefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6935427653708382751
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6935427653708382748}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6935427653708382749
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6935427653708382748}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b920407bb2dda76a90413a35c89d660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrefixSource: 2
+  KeyPrefix: CustomPrefix
+  SyncAllFields: 0
+  IncludeSubFields: 0
+--- !u!114 &6935427653708382750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6935427653708382748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8b5df719f9942eae89ae6ed31071483, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  String: field
+  Int: 1
+  Double: 1.1
+  Bool: 1
+  NestedObject:
+    String: nested field
+    Int: 2
+    Double: 2.1
+    Bool: 1
+    DoubleNested:
+      String: nested double field
+      Int: 3
+      Double: 3.1
+      Bool: 1
+  UniqueString: unique field
+  UniqueInt: 4
+  UniqueDouble: 4.1
+  UniqueBool: 1
+  UniqueNestedObject:
+    String: nested unique field
+    Int: 5
+    Double: 5.1
+    Bool: 1
+    DoubleNested:
+      String: nested double unique field
+      Int: 6
+      Double: 6.1
+      Bool: 1
+  NoTagString: no-tag field
+  NoTagInt: 6
+  NoTagDouble: 6.1
+  NoTagBool: 1
+  NoTagNestedObject:
+    String: nested no-tag field
+    Int: 7
+    Double: 7.1
+    Bool: 1
+    DoubleNested:
+      String: nested double no-tag field
+      Int: 8
+      Double: 8.1
+      Bool: 1
+  NoSyncString: DO NOT SYNC
+  NoSyncInt: -1
+  NoSyncDouble: -1.1
+  NoSyncBool: 0
+  NoSyncNestedObject:
+    String: nested DO NOT SYNC
+    Int: -1
+    Double: -1.1
+    Bool: 0
+  SyncAllPrefab: {fileID: 0}
+  SyncFieldsPrefab: {fileID: 0}

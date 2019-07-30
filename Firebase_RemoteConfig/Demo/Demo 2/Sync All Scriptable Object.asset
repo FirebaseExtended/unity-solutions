@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0525a0048e2af47ff94cc3dcb21b8d09, type: 3}
+  m_Name: Sync All Scriptable Object
+  m_EditorClassIdentifier: 
+  SyncString: sync this
+  SyncInt: 7
+  SyncFloat: 6.4
+  SyncBool: 1
+  SyncNestedObject:
+    NestedString: sync this
+    NestedInt: 77
+    NestedFloat: 41.2
+    NestedBool: 1
