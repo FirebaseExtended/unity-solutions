@@ -9,6 +9,7 @@ solution.
 
 ## Solutions
 - [Cross Platform Leaderboard using Firebase Database](https://github.com/FirebaseExtended/unity-solutions/tree/master/Firebase_Leaderboard)
+- [Auto Sync with Remote Config](https://github.com/FirebaseExtended/unity-solutions/tree/master/Firebase_RemoteConfig)
 
 This is not an officially supported Google product.
 
