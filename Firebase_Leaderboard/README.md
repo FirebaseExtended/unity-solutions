@@ -12,7 +12,7 @@ a look at the [Demo Scene][demo-scene] to see one in action right away!
 
 1. [Requirements](#requirements)
 1. [Setup](#setup)
-   1. [Optional: Setup editor restricted access](#optional--setup-editor-restricted-access)
+   1. [Optional: Set up editor restricted access](#optional--setup-editor-restricted-access)
 1. [Overview of Scripts](#Overview of Scripts)
 1. [Usage](#usage)
    1. [Setting up the LeaderboardController](#setting-up-the-leaderboardcontroller)
