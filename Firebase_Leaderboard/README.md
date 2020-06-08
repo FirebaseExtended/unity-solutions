@@ -237,7 +237,7 @@ Firebase Auth UID to the `AddScore` as the user's ID, or the writes will fail!
 
 ## Data Validation
 
-Using Firebase Auth to restrict write access to user's own records will prevent users from being
+Using Firebase Auth to restrict write access to user's own records will prevent users from
 deleting or manipulating other users' records, but it won't stop a malicious user from manipulating
 their own score data. Again, the likelihood of this happening depends on the build platform.
 
