@@ -141,7 +141,7 @@ namespace Firebase.ConfigAutoSync {
         var sourceObject = kv.Key;
         var targets = kv.Value;
         foreach (var target in targets) {
-          var value = FirebaseRemoteConfig.GetValue(target.FullKeyString);
+          var value = FirebaseRemoteConfigDeprecated.GetValue(target.FullKeyString);
           if (value.Source == ValueSource.RemoteValue) {
             if (target.Field.GetValue(sourceObject)?.ToString() == value.StringValue) {
               continue;

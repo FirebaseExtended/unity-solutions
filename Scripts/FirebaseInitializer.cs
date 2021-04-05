@@ -74,9 +74,9 @@ namespace Firebase.Unity {
         }
         if (!fetching) {
 #if UNITY_EDITOR
-          var settings = FirebaseRemoteConfig.Settings;
+          var settings = FirebaseRemoteConfigDeprecated.Settings;
           settings.IsDeveloperMode = true;
-          FirebaseRemoteConfig.Settings = settings;
+          FirebaseRemoteConfigDeprecated.Settings = settings;
 #endif
           // Get the default values from the current SyncTargets.
           var syncObjects = Resources.FindObjectsOfTypeAll<RemoteConfigSyncBehaviour>();
@@ -87,12 +87,12 @@ namespace Firebase.Unity {
           }
 
           Initialize(status => {
-            FirebaseRemoteConfig.SetDefaults(defaultValues);
-            FirebaseRemoteConfig.FetchAsync(TimeSpan.Zero).ContinueWith(task => {
+            FirebaseRemoteConfigDeprecated.SetDefaults(defaultValues);
+            FirebaseRemoteConfigDeprecated.FetchAsync(TimeSpan.Zero).ContinueWith(task => {
               lock (activateFetchCallbacks) {
                 fetching = false;
                 activateFetched = true;
-                var newlyActivated = FirebaseRemoteConfig.ActivateFetched();
+                var newlyActivated = FirebaseRemoteConfigDeprecated.ActivateFetched();
                 CallActivateFetchedCallbacks();
               }
             });

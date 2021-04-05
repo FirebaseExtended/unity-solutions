@@ -16,7 +16,6 @@
 
 using Firebase.Database;
 using Firebase.Unity;
-using Firebase.Unity.Editor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,23 +34,6 @@ namespace Firebase.Leaderboard {
     /// See https://firebase.google.com/docs/database/unity/start#setting_up_public_access.
     /// </summary>
     public bool EditorAuth = true;
-
-    /// <summary>
-    /// Location of Editor P12 file. This must be in a base folder called "Editor Default
-    /// Resources." See instructions at
-    /// https://firebase.google.com/docs/database/unity/start#optional_editor_setup_for_restricted_access.
-    /// </summary>
-    public string EditorP12FileName;
-
-    /// <summary>
-    /// Service account email used for Editor authentication after generating the P12 key file.
-    /// </summary>
-    public string EditorServiceAccountEmail;
-
-    /// <summary>
-    /// Password created along with P12 key file in authentication process.
-    /// </summary>
-    public string EditorP12Password;
 
     /// <summary>
     /// Subscribe to be notified when the database has been initialized.
@@ -251,15 +233,6 @@ namespace Firebase.Leaderboard {
       if (!initialized) {
         if (readyToInitialize) {
           FirebaseApp app = FirebaseApp.DefaultInstance;
-          if (EditorAuth) {
-            app.SetEditorP12FileName(EditorP12FileName);
-            app.SetEditorServiceAccountEmail(EditorServiceAccountEmail);
-            app.SetEditorP12Password(EditorP12Password);
-          }
-
-          if (app.Options.DatabaseUrl != null) {
-            app.SetEditorDatabaseUrl(app.Options.DatabaseUrl);
-          }
 
           dbref = FirebaseDatabase.DefaultInstance.RootReference;
           initialized = true;
