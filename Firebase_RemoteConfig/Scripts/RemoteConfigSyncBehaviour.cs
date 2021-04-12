@@ -137,11 +137,14 @@ namespace Firebase.ConfigAutoSync {
         Debug.LogWarning($"No sync targets found for {name}");
         yield break;
       }
+
+      var remoteConfig = FirebaseRemoteConfig.DefaultInstance;
+
       foreach (var kv in flattenedTargets) {
         var sourceObject = kv.Key;
         var targets = kv.Value;
         foreach (var target in targets) {
-          var value = FirebaseRemoteConfigDeprecated.GetValue(target.FullKeyString);
+          var value = remoteConfig.GetValue(target.FullKeyString);
           if (value.Source == ValueSource.RemoteValue) {
             if (target.Field.GetValue(sourceObject)?.ToString() == value.StringValue) {
               continue;
