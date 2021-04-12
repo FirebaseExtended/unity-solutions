@@ -14,23 +14,21 @@
   limitations under the License.
 **/
 
-using Firebase;
-using Firebase.Database;
 using Firebase.Unity;
-using Firebase.Unity.Editor;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Firebase.Leaderboard.Demo {
-  /// <summary>
-  /// This class controls the UI in the demo scene, responding to events and updating
-  /// elements of the UI as events occur.
-  /// </summary>
-  public class DemoUIController : MonoBehaviour {
+namespace Firebase.Leaderboard.Demo
+{
+    /// <summary>
+    /// This class controls the UI in the demo scene, responding to events and updating
+    /// elements of the UI as events occur.
+    /// </summary>
+    public class DemoUIController : MonoBehaviour {
     /// <summary>
     /// When adding batch scores, occasionally populate the UserIDInput and ScoreInput
     /// with one of the scores generated. For display purposes only.

@@ -32,7 +32,6 @@ namespace Firebase.Unity {
     private static List<Action> activateFetchCallbacks = new List<Action>();
     private static DependencyStatus dependencyStatus;
     private static bool initialized = false;
-    private static bool fetching = false;
     private static bool activateFetched = false;
 
     /// <summary>
@@ -72,32 +71,27 @@ namespace Firebase.Unity {
         } else {
           activateFetchCallbacks.Add(callback);
         }
-        if (!fetching) {
-#if UNITY_EDITOR
-          var settings = FirebaseRemoteConfig.Settings;
-          settings.IsDeveloperMode = true;
-          FirebaseRemoteConfig.Settings = settings;
-#endif
-          // Get the default values from the current SyncTargets.
-          var syncObjects = Resources.FindObjectsOfTypeAll<RemoteConfigSyncBehaviour>();
-          var syncTargets = SyncTargetManager.FindTargets(syncObjects).GetFlattenedTargets();
-          var defaultValues = new Dictionary<string, object>();
-          foreach (var target in syncTargets.Values) {
-            defaultValues[target.FullKeyString] = target.Value;
-          }
-
-          Initialize(status => {
-            FirebaseRemoteConfig.SetDefaults(defaultValues);
-            FirebaseRemoteConfig.FetchAsync(TimeSpan.Zero).ContinueWith(task => {
-              lock (activateFetchCallbacks) {
-                fetching = false;
-                activateFetched = true;
-                var newlyActivated = FirebaseRemoteConfig.ActivateFetched();
-                CallActivateFetchedCallbacks();
-              }
-            });
-          });
+        
+        // Get the default values from the current SyncTargets.
+        var syncObjects = Resources.FindObjectsOfTypeAll<RemoteConfigSyncBehaviour>();
+        var syncTargets = SyncTargetManager.FindTargets(syncObjects).GetFlattenedTargets();
+        var defaultValues = new Dictionary<string, object>();
+        foreach (var target in syncTargets.Values) {
+          defaultValues[target.FullKeyString] = target.Value;
         }
+
+        Initialize(status => {
+          var remoteConfig = FirebaseRemoteConfig.DefaultInstance;
+          remoteConfig.SetDefaultsAsync(defaultValues)
+            .ContinueWith(_=>{
+              remoteConfig.FetchAndActivateAsync().ContinueWith(_=>{
+              lock (activateFetchCallbacks) {
+                  activateFetched = true;
+                  CallActivateFetchedCallbacks();
+                }
+              });
+            });
+        });
       }
     }
 
